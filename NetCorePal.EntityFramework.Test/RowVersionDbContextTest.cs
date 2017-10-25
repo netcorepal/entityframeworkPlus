@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -50,30 +51,15 @@ namespace NetCorePal.EntityFramework.Test
         [TestMethod]
         public void SaveChangesTest()
         {
-            using (var db = new TestDbContext())
-            {
-                var entity = new AccountEntity
-                {
-                    Name = "n1",
-                    UpdateTime = DateTime.Now
-                };
-                db.AccountEntities.Add(entity);
-                db.SaveChanges();
-
-                Assert.AreEqual(1, entity.RowVersion);
-
-                entity.Name = "n2";
-
-                db.SaveChanges();
-
-                Assert.AreEqual(2, entity.RowVersion);
-            }
+            SaveChangeTest(context => { return context.SaveChanges(); });
+            SaveChangeTest(context => { return context.SaveChangesAsync().Result; });
+            SaveChangeTest(context => { return context.SaveChangesAsync(System.Threading.CancellationToken.None).Result; });
         }
 
 
-        [TestMethod]
-        public void SaveChangesAsyncTest()
+        void SaveChangeTest(Func<TestDbContext, int> doSave)
         {
+            //正常更新
             using (var db = new TestDbContext())
             {
                 var entity = new AccountEntity
@@ -82,17 +68,113 @@ namespace NetCorePal.EntityFramework.Test
                     UpdateTime = DateTime.Now
                 };
                 db.AccountEntities.Add(entity);
-                var i=  db.SaveChangesAsync().Result;
 
+                Assert.AreEqual(1, doSave(db));
                 Assert.AreEqual(1, entity.RowVersion);
-
                 entity.Name = "n2";
-
-                i= db.SaveChangesAsync().Result;
-
+                Assert.AreEqual(1, doSave(db));
                 Assert.AreEqual(2, entity.RowVersion);
             }
+
+            //构造旧数据
+            AccountEntity old = new AccountEntity
+            {
+                Name = "old",
+                UpdateTime = DateTime.Now
+            };
+
+            using (var db = new TestDbContext())
+            {
+                db.AccountEntities.Add(old);
+                Assert.AreEqual(1, doSave(db));
+            }
+
+
+            using (var db = new TestDbContext())
+            {
+                var entity2 = new AccountEntity
+                {
+                    Id = old.Id,
+                    Name = "n3",
+                    RowVersion = old.RowVersion,
+                    UpdateTime = DateTime.Now
+                };
+                entity2 = db.AccountEntities.Attach(entity2);
+                db.Entry(entity2).Property(p => p.Name).IsModified = true;
+
+                Assert.AreEqual(1, doSave(db));
+                Assert.AreEqual(old.RowVersion + 1, entity2.RowVersion);
+            }
+
+            #region 触发并发
+            
+            using (var db = new TestDbContext())
+            {
+                var entity2 = new AccountEntity
+                {
+                    Id = old.Id,
+                    Name = "n3",
+                    RowVersion = 100,
+                    UpdateTime = DateTime.Now
+                };
+                entity2 = db.AccountEntities.Attach(entity2);
+
+                db.Entry(entity2).Property(p => p.Name).IsModified = true;
+
+                try
+                {
+                    doSave(db);
+                    Assert.Fail("此处应该抛出异常");
+                }
+                catch (Exception ex)
+                {
+                    AssertException(ex);
+                }
+            }
+
+            using (var db = new TestDbContext())
+            {
+                var entity = db.AccountEntities.FirstOrDefault();
+                entity.Name += "1";
+                entity.RowVersion += 1;
+                try
+                {
+                    doSave(db);
+                    Assert.Fail("此处应该抛出异常");
+                }
+                catch (Exception ex)
+                {
+                    AssertException(ex);
+                }
+
+            }
+            #endregion
+            
         }
+
+
+        void AssertException(Exception ex)
+        {
+            if (ex is System.AggregateException)
+            {
+                Assert.IsInstanceOfType(ex.InnerException, typeof(DbUpdateConcurrencyException));
+            }
+            else
+            {
+                Assert.IsInstanceOfType(ex, typeof(DbUpdateConcurrencyException));
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
 
     }
 }
