@@ -62,7 +62,7 @@ public class YourEntity : IRowVersion
 
 Update your data like this:
 ```
-using (var db = new TestDbContext())
+using (var db = new YourDbContext())
 {
     var entity = db.AccountEntities.Find(id);
     entity.Name += "your new name";
@@ -71,7 +71,7 @@ using (var db = new TestDbContext())
 
 or
 
-using (var db = new TestDbContext())
+using (var db = new YourDbContext())
 {
     var entity = new AccountEntity
     {
