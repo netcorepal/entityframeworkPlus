@@ -2,7 +2,7 @@
 
 Row concurrency control  support for entityframework 6
 
-## install
+## Install
 ```
 Install-Package NetCorePal.EntityFramework.RowVersion
 ```
