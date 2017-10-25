@@ -64,7 +64,7 @@ Update your data like this:
 ```
 using (var db = new YourDbContext())
 {
-    var entity = db.AccountEntities.Find(id);
+    var entity = db.YourEntities.Find(id);
     entity.Name += "your new name";
     db.SaveChange();
 }
@@ -73,13 +73,13 @@ or
 
 using (var db = new YourDbContext())
 {
-    var entity = new AccountEntity
+    var entity = new YourEntity
     {
         Id = Id,
         Name = "new name",
         RowVersion = oldRowVerion  //use the old RowVersion value
     };
-    entity = db.AccountEntities.Attach(entity);
+    entity = db.YourEntities.Attach(entity);
     db.Entry(entity).Property(p => p.Name).IsModified = true;
     db.SaveChange();
 }
