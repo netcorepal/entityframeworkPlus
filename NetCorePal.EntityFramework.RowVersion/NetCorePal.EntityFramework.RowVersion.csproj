@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net45</TargetFramework>
+    <RootNamespace>NetCorePal.EntityFramework</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>netcorepal</Authors>
+    <Company>netcorepal</Company>
+    <PackageTags>netcorepal EntityFramework RowVersion Concurrency</PackageTags>
+    <PackageProjectUrl>https://github.com/netcorepal/entityframeworkPlus</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/netcorepal/entityframeworkPlus.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReleaseNotes>row version concurrency control support</PackageReleaseNotes>
+    <Description>row version concurrency control  support for entityframework 6</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>bin\Debug\net45\NetCorePal.EntityFramework.RowVersion.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\net45\NetCorePal.EntityFramework.RowVersion.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EntityFramework" Version="6.0.0" />
+  </ItemGroup>
+
+</Project>
