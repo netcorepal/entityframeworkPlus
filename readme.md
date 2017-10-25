@@ -9,18 +9,15 @@ Install-Package NetCorePal.EntityFramework.RowVersion
 
 ## How to use
 
-Replace DbContext whith RowVersionDbContext
+1. Replace DbContext whith RowVersionDbContext or use DbModelBuilderExtensions and DbContextExtensions
 ```
 public class YourDbContext : RowVersionDbContext
 {
 
 }
-```
 
 or
 
-Use DbModelBuilderExtensions and DbContextExtensions
-```
 public class YourDbContext : DbContext
 {
     protected override void OnModelCreating(DbModelBuilder modelBuilder)
@@ -44,7 +41,7 @@ public class YourDbContext : DbContext
 ```
 
 
-Add RowVersion to your entity
+2. Add RowVersion to your entity
 ```
 public class YourEntity : IRowVersion
 {
@@ -60,7 +57,7 @@ public class YourEntity : IRowVersion
 ```
 
 
-Update your data like this:
+3. Update your data like this:
 ```
 using (var db = new YourDbContext())
 {
